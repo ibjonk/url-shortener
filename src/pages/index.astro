@@ -1,12 +1,28 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Card from '../components/Card.astro';
 
+let shortCode = "";
 if (Astro.request.method === "POST") {
   try {
     const data = await Astro.request.formData();
 	const providedURL = data.get("url");
-  	console.log(providedURL);
+	const domain = (import.meta.env.ENVIRONMENT === 'LOCAL') ? 'http://localhost:4321' : 'https://prod.url';
+
+
+	const response = await fetch(`${domain}/api/addUrl`, 
+		{
+			method: "POST",
+			headers: {
+        'Content-Type': 'application/json', // Set the content type to JSON
+      },
+			body: JSON.stringify({url: providedURL})
+		}
+	)
+
+	shortCode = (await response.status === 200) ? await response.json() : "error message";
+console.log(shortCode)
+
+
   } catch (error) {
 	if (error instanceof Error) {
       console.error(error.message);
@@ -24,7 +40,8 @@ if (Astro.request.method === "POST") {
 			<button>Submit</button>
 		</form>
 		
-
+<a href={`http://localhost:4321/${shortCode}`} target="_blank" >http://localhost:4321/{shortCode}</a>
+	
 	</main>
 </Layout>
 
